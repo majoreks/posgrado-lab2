@@ -54,7 +54,7 @@ def train_model(config):
     my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname), transform=data_transforms)
     my_model = MyModel().to(device)
 
-    dataloader = DataLoader(my_dataset, batch_size=config['batch_size'])
+    dataloader = DataLoader(my_dataset, batch_size=config['batch_size']) # separate into train / eval / test
 
     criterion = F.nll_loss
     optimizer = optim.Adam(my_model.parameters(), lr=config['lr'])
