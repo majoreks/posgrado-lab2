@@ -3,10 +3,16 @@ import torch
 from dataset import MyDataset
 from model import MyModel
 from utils import accuracy, save_model
+import os
+import argparse
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+parser = argparse.ArgumentParser()
+parser.add_argument("--data-dir", help="path to data dir", type=str, default='data/')
+parser.add_argument("--info-fname", help="file name of csv with data info", type=str, default='chinese_mnist.csv')
+args = parser.parse_args()
 
-
+device = torch.device(
+    "cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 def train_single_epoch(...):
     pass
@@ -17,8 +23,7 @@ def eval_single_epoch(...):
 
 
 def train_model(config):
-    
-    my_dataset = MyDataset(...)
+    my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname))
     my_model = MyModel(...).to(device)
     for epoch in range(config["epochs"]):
         train_single_epoch(...)
