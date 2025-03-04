@@ -6,15 +6,18 @@ from PIL import Image
 
 class MyDataset(Dataset):
     def __init__(self, images_dir, labels_path, transform=None):
+        print(images_dir)
+        print(labels_path)
         self.images_dir = images_dir
         self.info_df = pd.read_csv(labels_path)
+        print(self.info_df.head())
         self.transform = transform
 
     def __len__(self):
         return len(self.info_df)
 
     def __getitem__(self, idx):
-        suite_id, sample_id, code, _, _ = self.info_df[idx, :-1]
+        suite_id, sample_id, code, _, _ = self.info_df.loc[idx, :]
         img = Image.open(self.__bulild_image_path(suite_id, sample_id, code))
         if self.transform:
             img = self.transform(img)
@@ -22,5 +25,5 @@ class MyDataset(Dataset):
         return img, code-1
 
     def __bulild_image_path(self, suite_id, sample_id, code):
-        return os.path.join(self.images_dir + "input_" + suite_id + "_" + sample_id + "_" + code + ".jpg")
+        return os.path.join(self.images_dir, "data", f"input_{suite_id}_{sample_id}_{code}.jpg")
 

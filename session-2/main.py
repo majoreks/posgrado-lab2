@@ -1,5 +1,6 @@
 import torch
 
+from torch.utils.data import DataLoader
 from dataset import MyDataset
 from model import MyModel
 from utils import accuracy, save_model
@@ -14,20 +15,23 @@ args = parser.parse_args()
 device = torch.device(
     "cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-def train_single_epoch(...):
-    pass
+# def train_single_epoch(...):
+#     pass
 
 
-def eval_single_epoch(...):
-    pass
+# def eval_single_epoch(...):
+#     pass
 
 
 def train_model(config):
     my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname))
-    my_model = MyModel(...).to(device)
-    for epoch in range(config["epochs"]):
-        train_single_epoch(...)
-        eval_single_epoch(...)
+    my_model = MyModel().to(device)
+
+    img_ex = my_dataset[0]
+    print(img_ex)
+    # for epoch in range(config["epochs"]):
+    #     train_single_epoch(...)
+    #     eval_single_epoch(...)
 
     return my_model
 
