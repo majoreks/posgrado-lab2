@@ -6,11 +6,8 @@ from PIL import Image
 
 class MyDataset(Dataset):
     def __init__(self, images_dir, labels_path, transform=None):
-        print(images_dir)
-        print(labels_path)
         self.images_dir = images_dir
         self.info_df = pd.read_csv(labels_path)
-        print(self.info_df.head())
         self.transform = transform
 
     def __len__(self):
