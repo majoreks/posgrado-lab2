@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from dataset import MyDataset
 from model import MyModel
 from utils import accuracy, save_model
+from transforms import data_transforms
 import os
 import argparse
 
@@ -24,11 +25,13 @@ device = torch.device(
 
 
 def train_model(config):
-    my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname))
+    my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname), transform=data_transforms)
     my_model = MyModel().to(device)
 
-    img_ex = my_dataset[0]
-    print(img_ex)
+    dataloader = DataLoader(my_dataset)
+    
+    x, y = next(iter(dataloader))
+    print(x, y)
     # for epoch in range(config["epochs"]):
     #     train_single_epoch(...)
     #     eval_single_epoch(...)
