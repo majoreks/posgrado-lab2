@@ -1,3 +1,5 @@
+import pandas as pd
+import sklearn.model_selection
 import torch
 
 from torch.utils.data import DataLoader
@@ -11,6 +13,7 @@ import os
 import argparse
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
+import sklearn
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", help="path to data dir", type=str, default='data/')
@@ -51,6 +54,10 @@ def eval_single_epoch(model, criterion, dataloader, val_loss, val_acc):
 
 
 def train_model(config):
+    info = pd.read_csv(os.path.join(args.data_dir, args.info_fname))
+    train_valid, test = sklearn.model_selection.train_test_split(info, test_size=0.3, stratify=info['code'])
+    train, valid = sklearn.model_selection.train_test_split(train_valid, test_size=0.3, stratify=train_valid['code'])
+
     my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname), transform=data_transforms)
     my_model = MyModel().to(device)
 
