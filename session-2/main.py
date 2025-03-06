@@ -55,13 +55,24 @@ def eval_single_epoch(model, criterion, dataloader, val_loss, val_acc):
 
 def train_model(config):
     info = pd.read_csv(os.path.join(args.data_dir, args.info_fname))
-    train_valid, test = sklearn.model_selection.train_test_split(info, test_size=0.3, stratify=info['code'])
-    train, valid = sklearn.model_selection.train_test_split(train_valid, test_size=0.3, stratify=train_valid['code'])
+    train_valid_df, test_df = sklearn.model_selection.train_test_split(info, test_size=0.3, stratify=info['code'])
+    train_df, valid_df = sklearn.model_selection.train_test_split(train_valid_df, test_size=0.3, stratify=train_valid_df['code'])
 
-    my_dataset = MyDataset(args.data_dir, os.path.join(args.data_dir, args.info_fname), transform=data_transforms)
+    train_df = train_df.reset_index(drop=True)
+    valid_df = valid_df.reset_index(drop=True)
+    test_df = test_df.reset_index(drop=True)
+
+    train_dataset = MyDataset(args.data_dir, train_df, transform=data_transforms)
+    valid_dataset = MyDataset(args.data_dir, valid_df, transform=data_transforms)
+    test_dataset = MyDataset(args.data_dir, test_df, transform=data_transforms)
+    print(train_df.head())
+    print(valid_df.head())
+
     my_model = MyModel().to(device)
 
-    dataloader = DataLoader(my_dataset, batch_size=config['batch_size']) # separate into train / eval / test
+    train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size']) 
+    valid_dataloader = DataLoader(valid_dataset, batch_size=config['batch_size']) 
+    test_dataloader = DataLoader(test_dataset, batch_size=config['batch_size'])
 
     criterion = F.nll_loss
     optimizer = optim.Adam(my_model.parameters(), lr=config['lr'])
@@ -74,12 +85,12 @@ def train_model(config):
 
     for _ in tqdm(range(config["epochs"]), 'epoch'):
         my_model.train()
-        train_single_epoch(my_model, criterion, optimizer, dataloader, train_loss, train_accuracy)
+        train_single_epoch(my_model, criterion, optimizer, train_dataloader, train_loss, train_accuracy)
         train_losses.append(train_loss.avg)
         train_accuracies.append(train_accuracy.avg)
         
         my_model.eval()
-        eval_single_epoch(my_model, criterion, dataloader, val_loss, val_accuracy)
+        eval_single_epoch(my_model, criterion, valid_dataloader, val_loss, val_accuracy)
         val_losses.append(val_loss.avg)
         val_accuracies.append(val_accuracy.avg)
    

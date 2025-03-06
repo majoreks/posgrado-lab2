@@ -1,13 +1,12 @@
 import os
-import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
 
 
 class MyDataset(Dataset):
-    def __init__(self, images_dir, labels_path, transform=None):
+    def __init__(self, images_dir, info_df, transform=None):
         self.images_dir = images_dir
-        self.info_df = pd.read_csv(labels_path)
+        self.info_df = info_df
         self.transform = transform
 
     def __len__(self):
