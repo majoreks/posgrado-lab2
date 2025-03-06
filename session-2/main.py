@@ -65,8 +65,6 @@ def train_model(config):
     train_dataset = MyDataset(args.data_dir, train_df, transform=data_transforms)
     valid_dataset = MyDataset(args.data_dir, valid_df, transform=data_transforms)
     test_dataset = MyDataset(args.data_dir, test_df, transform=data_transforms)
-    print(train_df.head())
-    print(valid_df.head())
 
     my_model = MyModel().to(device)
 
