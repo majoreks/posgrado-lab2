@@ -102,17 +102,17 @@ def train_model(config):
         val_losses.append(np.asarray(val_epoch_loss).mean())
         val_accuracies.append(np.asarray(val_epoch_acc).mean())
    
-    epochs = range(len(train_accuracies))
+    stats_len = range(len(train_accuracies))
 
-    plt.plot(epochs, train_accuracies, 'b', label='Training acc')
-    plt.plot(epochs, val_accuracies, 'r', label='Validation acc')
+    plt.plot(stats_len, train_accuracies, 'b', label='Training acc')
+    plt.plot(stats_len, val_accuracies, 'r', label='Validation acc')
     plt.title('Training and validation accuracy')
     plt.legend()
     plt.savefig(os.path.join(os.path.dirname(__file__), 'acc.png'), dpi=400)       
 
     plt.figure()
-    plt.plot(epochs, train_losses, 'b', label='Training loss')
-    plt.plot(epochs, val_losses, 'r', label='Validation loss')
+    plt.plot(stats_len, train_losses, 'b', label='Training loss')
+    plt.plot(stats_len, val_losses, 'r', label='Validation loss')
     plt.title('Training and validation loss')
     plt.legend()
     plt.savefig(os.path.join(os.path.dirname(__file__), 'loss.png'), dpi=400)
