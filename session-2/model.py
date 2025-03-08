@@ -5,27 +5,25 @@ class MyModel(nn.Module):
         super().__init__()
         self.conv_layers = nn.Sequential(
             nn.Conv2d(1, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
             nn.Conv2d(32, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
-            nn.Dropout(0.5),
 
             nn.Conv2d(32, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
             nn.Conv2d(64, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
-            nn.Dropout(0.5),
         )
 
         self.mlp = nn.Sequential(
             nn.Linear(16 * 16 * 64, 512),
             nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(512, 512),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
             nn.Linear(512, 15),
             nn.LogSoftmax(),
         )
