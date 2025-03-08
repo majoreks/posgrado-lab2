@@ -28,6 +28,8 @@ args = parser.parse_args()
 device = torch.device(
     "cuda") if torch.cuda.is_available() else torch.device("cpu")
 
+torch.manual_seed(0)
+
 def train_single_epoch(model, criterion, optimizer, dataloader):
     epoch_loss = []
     epoch_acc = []
