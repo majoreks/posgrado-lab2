@@ -23,6 +23,7 @@ parser.add_argument("--info-fname", help="file name of csv with data info", type
 parser.add_argument("--n-epochs", help="number of epochs to train", type=int, default=10)
 parser.add_argument("--batch-size", help="batch size", type=int, default=100)
 parser.add_argument("--lr", help="learning rate", type=float, default=0.001)
+parser.add_argument("--mlp-width", help="width of mlp", type=int, default=512)
 args = parser.parse_args()
 
 device = torch.device(
@@ -81,7 +82,7 @@ def train_model(config):
     valid_dataset = MyDataset(args.data_dir, valid_df, transform=data_transforms)
     test_dataset = MyDataset(args.data_dir, test_df, transform=data_transforms)
 
-    my_model = MyModel().to(device)
+    my_model = MyModel(config['mlp_width']).to(device)
 
     train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=2) 
     valid_dataloader = DataLoader(valid_dataset, batch_size=config['batch_size']) 
@@ -126,5 +127,6 @@ if __name__ == "__main__":
         "epochs": args.n_epochs,
         "batch_size": args.batch_size,
         "lr": args.lr,
+        "mlp_width": args.mlp_width
     }
     train_model(config)
