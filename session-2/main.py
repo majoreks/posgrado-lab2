@@ -4,11 +4,10 @@ import torch
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-import torch.nn.functional as F
 import torch.nn as nn
 from dataset import MyDataset
 from model import MyModel
-from utils import AverageMeter, accuracy, save_model
+from utils import accuracy
 from transforms import data_transforms
 import os
 import argparse
@@ -21,9 +20,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", help="path to data dir", type=str, default='data/')
 parser.add_argument("--info-fname", help="file name of csv with data info", type=str, default='chinese_mnist.csv')
 parser.add_argument("--n-epochs", help="number of epochs to train", type=int, default=10)
-parser.add_argument("--batch-size", help="batch size", type=int, default=100)
+parser.add_argument("--batch-size", help="batch size", type=int, default=32)
 parser.add_argument("--lr", help="learning rate", type=float, default=0.001)
-parser.add_argument("--mlp-width", help="width of mlp", type=int, default=512)
+parser.add_argument("--mlp-width", help="width of mlp", type=int, default=256)
 args = parser.parse_args()
 
 device = torch.device(
