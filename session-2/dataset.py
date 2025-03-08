@@ -1,7 +1,7 @@
 import os
 from torch.utils.data import Dataset
 from PIL import Image
-
+import numpy as np
 
 class MyDataset(Dataset):
     def __init__(self, images_dir, info_df, transform=None):
@@ -17,7 +17,6 @@ class MyDataset(Dataset):
         img = Image.open(self.__bulild_image_path(suite_id, sample_id, code))
         if self.transform:
             img = self.transform(img)
-        
         return img, code-1
 
     def __bulild_image_path(self, suite_id, sample_id, code):
