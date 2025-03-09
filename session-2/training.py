@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from torch import device
 from tqdm import tqdm
-from utils import accuracy
+from utils import accuracy, config_to_string
 from device import device
 from model import MyModel
 from torch.utils.data import DataLoader
@@ -44,6 +44,9 @@ def eval_single_epoch(model, criterion, dataloader):
     return epoch_loss, epoch_acc
 
 def train_model(config, train_dataset, val_dataset):
+    train_run_path = os.path.join(os.path.dirname(__file__), 'train_runs', config_to_string(config))
+    os.makedirs(train_run_path)
+
     my_model = MyModel(config['mlp_width']).to(device)
 
     train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=8) 
@@ -70,13 +73,13 @@ def train_model(config, train_dataset, val_dataset):
     plt.plot(stats_len, val_accuracies, 'r', label='Validation acc')
     plt.title('Training and validation accuracy')
     plt.legend()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'acc.png'), dpi=400)       
+    plt.savefig(os.path.join(train_run_path, 'acc.png'), dpi=400)       
 
     plt.figure()
     plt.plot(stats_len, train_losses, 'b', label='Training loss')
     plt.plot(stats_len, val_losses, 'r', label='Validation loss')
     plt.title('Training and validation loss')
     plt.legend()
-    plt.savefig(os.path.join(os.path.dirname(__file__), 'loss.png'), dpi=400)
+    plt.savefig(os.path.join(train_run_path, 'loss.png'), dpi=400)
 
     return my_model
