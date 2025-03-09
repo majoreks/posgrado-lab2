@@ -1,15 +1,12 @@
 import pandas as pd
 import sklearn.model_selection
-import torch
-
 from torch.utils.data import DataLoader
 from dataset import MyDataset
 from transforms import data_transforms
 import os
 import argparse
 import sklearn
-import numpy as np
-import random
+from utils import set_seed
 from training import train_model
 
 parser = argparse.ArgumentParser()
@@ -22,11 +19,6 @@ parser.add_argument("--mlp-width", help="width of mlp", type=int, default=256)
 parser.add_argument("--weight-decay", help="weight decay value", type=float, default=1e-4)
 args = parser.parse_args()
 
-def set_seed(seed=42):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
 set_seed(42)
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import os
 from torch.utils.data import Dataset
 from PIL import Image
-import numpy as np
+from utils import proj_path
 
 class MyDataset(Dataset):
     def __init__(self, images_dir, info_df, transform=None):
@@ -20,5 +20,5 @@ class MyDataset(Dataset):
         return img, code-1
 
     def __bulild_image_path(self, suite_id, sample_id, code):
-        return os.path.join('/home/szymon/code/posgrado/lab2/', self.images_dir, "data", f"input_{suite_id}_{sample_id}_{code}.jpg")
+        return os.path.join(proj_path, self.images_dir, "data", f"input_{suite_id}_{sample_id}_{code}.jpg")
 
