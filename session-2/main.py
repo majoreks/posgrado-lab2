@@ -15,20 +15,27 @@ from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import sklearn
 import numpy as np
+import random
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", help="path to data dir", type=str, default='data/')
 parser.add_argument("--info-fname", help="file name of csv with data info", type=str, default='chinese_mnist.csv')
-parser.add_argument("--n-epochs", help="number of epochs to train", type=int, default=10)
-parser.add_argument("--batch-size", help="batch size", type=int, default=32)
-parser.add_argument("--lr", help="learning rate", type=float, default=0.001)
+parser.add_argument("--n-epochs", help="number of epochs to train", type=int, default=15)
+parser.add_argument("--batch-size", help="batch size", type=int, default=128)
+parser.add_argument("--lr", help="learning rate", type=float, default=0.0005)
 parser.add_argument("--mlp-width", help="width of mlp", type=int, default=256)
+parser.add_argument("--weight-decay", help="weight decay value", type=float, default=1e-4)
 args = parser.parse_args()
 
 device = torch.device(
     "cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-torch.manual_seed(0)
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+set_seed(42)
 
 def train_single_epoch(model, criterion, optimizer, dataloader):
     epoch_loss = []
@@ -85,12 +92,12 @@ def train_model(config):
 
     my_model = MyModel(config['mlp_width']).to(device)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=2) 
+    train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=8) 
     valid_dataloader = DataLoader(valid_dataset, batch_size=config['batch_size']) 
     test_dataloader = DataLoader(test_dataset, batch_size=config['batch_size'])
 
     criterion = nn.NLLLoss()
-    optimizer = optim.Adam(my_model.parameters(), lr=config['lr'])
+    optimizer = optim.Adam(my_model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
     
     train_accuracies, train_losses, val_accuracies, val_losses = [], [], [], []
 
@@ -128,6 +135,7 @@ if __name__ == "__main__":
         "epochs": args.n_epochs,
         "batch_size": args.batch_size,
         "lr": args.lr,
-        "mlp_width": args.mlp_width
+        "mlp_width": args.mlp_width,
+        "weight_decay": args.weight_decay
     }
     train_model(config)
