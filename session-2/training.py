@@ -3,19 +3,20 @@ from matplotlib import pyplot as plt
 import numpy as np
 from torch import device
 from tqdm import tqdm
-from utils import accuracy, config_to_string
+from utils import accuracy, config_to_string, save_model
 from device import device
 from model import MyModel
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import torch.nn as nn
 
-def train_single_epoch(model, criterion, optimizer, dataloader):
+def train_single_epoch(model, criterion, optimizer, dataloader, print_progress = True):
     epoch_loss = []
     epoch_acc = []
 
     model.train()
-    for x, y in tqdm(dataloader):
+    iterator = tqdm(dataloader) if print_progress else dataloader
+    for x, y in iterator:
         x, y = x.to(device), y.to(device)
         optimizer.zero_grad()
         y_ = model(x)
@@ -28,12 +29,13 @@ def train_single_epoch(model, criterion, optimizer, dataloader):
 
     return epoch_loss, epoch_acc
 
-def eval_single_epoch(model, criterion, dataloader):
+def eval_single_epoch(model, criterion, dataloader, print_progress = True):
     epoch_loss = []
     epoch_acc = []
 
     model.eval()
-    for x, y in tqdm(dataloader):
+    iterator = tqdm(dataloader) if print_progress else dataloader
+    for x, y in iterator:
         x, y = x.to(device), y.to(device)
         y_ = model(x)
         loss = criterion(y_, y)
@@ -43,9 +45,9 @@ def eval_single_epoch(model, criterion, dataloader):
     
     return epoch_loss, epoch_acc
 
-def train_model(config, train_dataset, val_dataset):
+def train_model(config, train_dataset, val_dataset, print_progress = True):
     train_run_path = os.path.join(os.path.dirname(__file__), 'train_runs', config_to_string(config))
-    os.makedirs(train_run_path)
+    os.makedirs(train_run_path, exist_ok=True)
 
     my_model = MyModel(config['mlp_width']).to(device)
 
@@ -57,7 +59,8 @@ def train_model(config, train_dataset, val_dataset):
     
     train_accuracies, train_losses, val_accuracies, val_losses = [], [], [], []
 
-    for _ in tqdm(range(config["epochs"]), 'epoch'):
+    iterator = tqdm(range(config["epochs"]), 'epoch') if print_progress else range(config["epochs"])
+    for _ in iterator:
         train_epoch_loss, train_epoch_acc = train_single_epoch(my_model, criterion, optimizer, train_dataloader)
         
         train_losses.append(np.asarray(train_epoch_loss).mean())
@@ -82,4 +85,8 @@ def train_model(config, train_dataset, val_dataset):
     plt.legend()
     plt.savefig(os.path.join(train_run_path, 'loss.png'), dpi=400)
 
-    return my_model
+    save_model(my_model, os.path.join(train_run_path, 'model_weights.pt'))
+    return {
+        'val_loss': val_losses[-1],  # Use the last validation loss
+        'val_acc': val_accuracies[-1],  # Use the last validation accuracy
+    }
