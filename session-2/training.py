@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from torch import device
 from tqdm import tqdm
-from utils import accuracy, config_to_string, save_model
+from utils import accuracy, config_to_string, create_best_txt, load_model, save_model, proj_path
 from device import device
 from model import MyModel
 from torch.utils.data import DataLoader
@@ -90,3 +90,27 @@ def train_model(config, train_dataset, val_dataset, print_progress = True):
         'val_loss': val_losses[-1],  # Use the last validation loss
         'val_acc': val_accuracies[-1],  # Use the last validation accuracy
     }
+
+def test_model(config, test_dataset):
+    print('testing model', config_to_string(config))
+
+    model_dir = os.path.join(proj_path, 'session-2', 'train_runs', config_to_string(config))
+    create_best_txt(model_dir)
+
+    model_path = os.path.join(model_dir, 'model_weights.pt')
+    test_dataloader = DataLoader(test_dataset, batch_size=config['batch_size'])
+    model = MyModel(config["mlp_width"])
+    model = load_model(model, model_path)
+    model = model.to(device)
+
+    epoch_acc = []
+
+    model.eval()
+    iterator = tqdm(test_dataloader)
+    for x, y in iterator:
+        x, y = x.to(device), y.to(device)
+        y_ = model(x)
+
+        epoch_acc.append(accuracy(y, y_))
+    
+    return np.asarray(epoch_acc).mean()
