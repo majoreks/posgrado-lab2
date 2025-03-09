@@ -7,7 +7,6 @@ import torch.optim as optim
 import torch.nn as nn
 from dataset import MyDataset
 from model import MyModel
-from utils import accuracy
 from transforms import data_transforms
 import os
 import argparse
@@ -16,6 +15,8 @@ import matplotlib.pyplot as plt
 import sklearn
 import numpy as np
 import random
+from training import train_single_epoch, eval_single_epoch
+from device import device
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--data-dir", help="path to data dir", type=str, default='data/')
@@ -27,9 +28,6 @@ parser.add_argument("--mlp-width", help="width of mlp", type=int, default=256)
 parser.add_argument("--weight-decay", help="weight decay value", type=float, default=1e-4)
 args = parser.parse_args()
 
-device = torch.device(
-    "cuda") if torch.cuda.is_available() else torch.device("cpu")
-
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
@@ -37,64 +35,11 @@ def set_seed(seed=42):
     torch.cuda.manual_seed_all(seed)
 set_seed(42)
 
-def train_single_epoch(model, criterion, optimizer, dataloader):
-    epoch_loss = []
-    epoch_acc = []
-
-    model.train()
-    for x, y in tqdm(dataloader):
-        x, y = x.to(device), y.to(device)
-        optimizer.zero_grad()
-        y_ = model(x)
-        # print(y_)
-        # print(y)
-        # raise Exception("XD")
-        loss = criterion(y_, y)
-        # print(y_)
-        # print(f'loss | train | {loss}')
-        loss.backward()
-        optimizer.step()
-
-        epoch_loss.append(loss.item())
-        epoch_acc.append(accuracy(y, y_))
-
-    return epoch_loss, epoch_acc
-
-def eval_single_epoch(model, criterion, dataloader):
-    epoch_loss = []
-    epoch_acc = []
-
-    model.eval()
-    for x, y in tqdm(dataloader):
-        x, y = x.to(device), y.to(device)
-        y_ = model(x)
-        loss = criterion(y_, y)
-        # print(f'loss | valid | {loss}')
-
-        epoch_loss.append(loss.item())
-        epoch_acc.append(accuracy(y, y_))
-    
-    return epoch_loss, epoch_acc
-
-
-def train_model(config):
-    info = pd.read_csv(os.path.join(args.data_dir, args.info_fname))
-    train_valid_df, test_df = sklearn.model_selection.train_test_split(info, test_size=0.3, stratify=info['code'])
-    train_df, valid_df = sklearn.model_selection.train_test_split(train_valid_df, test_size=0.3, stratify=train_valid_df['code'])
-
-    train_df = train_df.reset_index(drop=True)
-    valid_df = valid_df.reset_index(drop=True)
-    test_df = test_df.reset_index(drop=True)
-
-    train_dataset = MyDataset(args.data_dir, train_df, transform=data_transforms)
-    valid_dataset = MyDataset(args.data_dir, valid_df, transform=data_transforms)
-    test_dataset = MyDataset(args.data_dir, test_df, transform=data_transforms)
-
+def train_model(config, train_dataset, val_dataset):
     my_model = MyModel(config['mlp_width']).to(device)
 
     train_dataloader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=8) 
-    valid_dataloader = DataLoader(valid_dataset, batch_size=config['batch_size']) 
-    test_dataloader = DataLoader(test_dataset, batch_size=config['batch_size'])
+    valid_dataloader = DataLoader(val_dataset, batch_size=config['batch_size']) 
 
     criterion = nn.NLLLoss()
     optimizer = optim.Adam(my_model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
@@ -138,4 +83,19 @@ if __name__ == "__main__":
         "mlp_width": args.mlp_width,
         "weight_decay": args.weight_decay
     }
-    train_model(config)
+
+    info = pd.read_csv(os.path.join(args.data_dir, args.info_fname))
+    train_valid_df, test_df = sklearn.model_selection.train_test_split(info, test_size=0.3, stratify=info['code'])
+    train_df, valid_df = sklearn.model_selection.train_test_split(train_valid_df, test_size=0.3, stratify=train_valid_df['code'])
+
+    train_df = train_df.reset_index(drop=True)
+    valid_df = valid_df.reset_index(drop=True)
+    test_df = test_df.reset_index(drop=True)
+
+    train_dataset = MyDataset(args.data_dir, train_df, transform=data_transforms)
+    valid_dataset = MyDataset(args.data_dir, valid_df, transform=data_transforms)
+
+    test_dataset = MyDataset(args.data_dir, test_df, transform=data_transforms)
+    test_dataloader = DataLoader(test_dataset, batch_size=config['batch_size'])
+
+    train_model(config, train_dataset, valid_dataset)
